@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Task Tracker - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        /* Styles for Kanban board (remain mostly the same) */
+        .kanban-column {
+            min-height: 300px; background-color: #e5e7eb; border-radius: 0.5rem;
+            padding: 1rem; margin: 0.5rem; flex: 1;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .kanban-column.drag-over { background-color: #d1d5db; }
+        .task-card {
+            background-color: white; border-radius: 0.375rem; padding: 0.75rem;
+            margin-bottom: 0.75rem; cursor: grab;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+            border-left: 4px solid transparent; position: relative;
+        }
+        .task-card:active { cursor: grabbing; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .task-card.dragging { opacity: 0.5; }
+        .task-due-date { font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem; display: block; }
+        .task-card.overdue { border-left-color: #ef4444; } /* Red */
+        .task-card.due-soon { border-left-color: #f59e0b; } /* Amber */
+        .task-card.done-task { border-left-color: #22c55e; } /* Green */
+        .add-task-container { background-color: white; border-radius: 0.5rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .delete-task-btn {
+            position: absolute; top: 5px; right: 5px; background: none; border: none;
+            color: #9ca3af; font-size: 1rem; cursor: pointer; padding: 2px; line-height: 1;
+            border-radius: 50%; width: 20px; height: 20px; display: flex;
+            align-items: center; justify-content: center; transition: color 0.2s ease, background-color 0.2s ease;
+        }
+        .delete-task-btn:hover { color: #ef4444; background-color: #fee2e2; }
+
+        /* Styles for Login Container */
+        #loginContainer {
+            max-width: 400px;
+            margin: 5rem auto; /* Center vertically and horizontally */
+            padding: 2rem;
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Helper class to hide elements */
+        .hidden { display: none; }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="loginContainer">
+        <h1 class="text-2xl font-bold text-center mb-6 text-gray-800">Login to Kanban Board</h1>
+        <div class="space-y-4">
+            <div>
+                <label for="usernameInput" class="block text-sm font-medium text-gray-700">Username</label>
+                <input type="text" id="usernameInput" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out">
+            </div>
+            <div>
+                <label for="passwordInput" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="passwordInput" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out">
+            </div>
+            <button id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-150 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Login
+            </button>
+            <p id="loginError" class="text-red-600 text-sm text-center mt-2 hidden"></p> </div>
+        <div class="mt-6 p-3 bg-yellow-100 border border-yellow-300 rounded-lg text-sm text-yellow-800">
+            <p><strong>Note:</strong> This is a demo login.</p>
+            <p>Use username: <strong>username</strong> and password: <strong>password</strong> to explore the app.</p>
+            <p class="mt-1"><em>This login is not secure and only for demonstration purposes.</em></p>
+        </div>
+    </div>
+
+    <div id="kanbanAppContainer" class="hidden">
+         <div class="max-w-6xl mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                 <h1 class="text-3xl font-bold text-gray-800">My Kanban Board</h1>
+                 <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                     Logout
+                 </button>
+            </div>
+
+            <div class="add-task-container mb-8 flex flex-col sm:flex-row items-stretch gap-4">
+                <input type="text" id="newTaskInput" placeholder="Enter new task..." class="flex-grow p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out">
+                <input type="date" id="newTaskDueDate" title="Due Date" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out">
+                <button id="addTaskBtn" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-150 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Add Task
+                </button>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-between gap-4">
+                <div id="todo" class="kanban-column" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="handleDragLeave(event)">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b-2 border-red-400 pb-2">To Do</h2>
+                    </div>
+
+                <div id="inprogress" class="kanban-column" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="handleDragLeave(event)">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b-2 border-yellow-400 pb-2">In Progress</h2>
+                    </div>
+
+                <div id="done" class="kanban-column" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="handleDragLeave(event)">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b-2 border-green-400 pb-2">Done</h2>
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Constants ---
+        const DEFAULT_USERNAME = 'username';
+        const DEFAULT_PASSWORD = 'password';
+        const LOGGED_IN_KEY = 'kanbanAppLoggedIn'; // Local storage key for login status
+        const TASKS_KEY = 'kanbanTasks'; // Local storage key for tasks
+
+        // --- DOM Elements ---
+        // Login Elements
+        const loginContainer = document.getElementById('loginContainer');
+        const usernameInput = document.getElementById('usernameInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
+
+        // Kanban App Elements
+        const kanbanAppContainer = document.getElementById('kanbanAppContainer');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const newTaskInput = document.getElementById('newTaskInput');
+        const newTaskDueDateInput = document.getElementById('newTaskDueDate');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const columns = document.querySelectorAll('.kanban-column');
+        const todoColumn = document.getElementById('todo');
+        const doneColumn = document.getElementById('done');
+
+        // --- State ---
+        let draggedItem = null;
+
+        // --- Utility Functions (Formatting, Date Checking) ---
+        function formatDate(dateString) { /* ... (no changes needed) ... */
+            if (!dateString) return '';
+            try {
+                const date = new Date(dateString + 'T00:00:00');
+                if (isNaN(date.getTime())) return '';
+                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            } catch (e) { console.error("Error formatting date:", e); return ''; }
+        }
+
+        function checkDueDateStatus(dueDateString, isDone) { /* ... (no changes needed) ... */
+             if (isDone) return 'done-task';
+            if (!dueDateString) return 'normal';
+            try {
+                const today = new Date(); today.setHours(0, 0, 0, 0);
+                const dueDate = new Date(dueDateString + 'T00:00:00');
+                if (isNaN(dueDate.getTime())) return 'normal';
+                const timeDiff = dueDate.getTime() - today.getTime();
+                const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                if (dayDiff < 0) { return 'overdue'; }
+                else if (dayDiff <= 2) { return 'due-soon'; }
+                else { return 'normal'; }
+            } catch (e) { console.error("Error checking due date status:", e); return 'normal'; }
+        }
+
+        function applyDueDateStyling(card, status) { /* ... (no changes needed) ... */
+            card.classList.remove('overdue', 'due-soon', 'done-task');
+            if (status === 'overdue') { card.classList.add('overdue'); }
+            else if (status === 'due-soon') { card.classList.add('due-soon'); }
+            else if (status === 'done-task') { card.classList.add('done-task'); }
+        }
+
+        // --- Core Task Functions ---
+        function createTaskCard(text, dueDate, id, isDone = false) { /* ... (no changes needed) ... */
+            const card = document.createElement('div');
+            card.classList.add('task-card');
+            card.setAttribute('draggable', 'true');
+            card.setAttribute('id', id || `task-${Date.now()}`);
+            card.dataset.dueDate = dueDate || '';
+
+            const textSpan = document.createElement('span');
+            textSpan.textContent = text;
+            card.appendChild(textSpan);
+
+            if (dueDate) {
+                const dueDateSpan = document.createElement('span');
+                dueDateSpan.classList.add('task-due-date');
+                dueDateSpan.textContent = `Due: ${formatDate(dueDate)}`;
+                card.appendChild(dueDateSpan);
+            }
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.classList.add('delete-task-btn');
+            deleteBtn.innerHTML = '&times;';
+            deleteBtn.title = 'Delete Task';
+            deleteBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                // Use text content for confirmation message for clarity
+                const taskTextContent = card.querySelector('span:not(.task-due-date)')?.textContent || 'this task';
+                if (confirm(`Are you sure you want to delete task: "${taskTextContent}"?`)) {
+                    card.remove();
+                    saveTasks();
+                }
+            });
+            card.appendChild(deleteBtn);
+
+            const status = checkDueDateStatus(dueDate, isDone);
+            applyDueDateStyling(card, status);
+
+            card.addEventListener('dragstart', handleDragStart);
+            card.addEventListener('dragend', handleDragEnd);
+
+            return card;
+        }
+
+        function addTask() { /* ... (no changes needed) ... */
+            const taskText = newTaskInput.value.trim();
+            const taskDueDate = newTaskDueDateInput.value;
+            if (taskText) {
+                const newTask = createTaskCard(taskText, taskDueDate);
+                todoColumn.appendChild(newTask);
+                newTaskInput.value = '';
+                newTaskDueDateInput.value = '';
+                saveTasks();
+            } else { console.warn("Task input is empty."); }
+        }
+
+        function triggerConfetti() { /* ... (no changes needed) ... */
+             confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 }, colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42'], zIndex: 1000 });
+        }
+
+        // --- Drag and Drop Handlers ---
+        function handleDragStart(event) { /* ... (no changes needed) ... */
+             draggedItem = event.target;
+            event.dataTransfer.setData('text/plain', event.target.id);
+            setTimeout(() => { event.target.classList.add('dragging'); }, 0);
+            console.log('Drag Start:', draggedItem.id);
+         }
+        function handleDragEnd(event) { /* ... (no changes needed) ... */
+            if (draggedItem) {
+                draggedItem.classList.remove('dragging');
+                console.log('Drag End:', draggedItem.id);
+                draggedItem = null;
+            }
+        }
+        function handleDragOver(event) { /* ... (no changes needed) ... */
+            event.preventDefault();
+            const targetColumn = event.currentTarget;
+            if (targetColumn.classList.contains('kanban-column')) { targetColumn.classList.add('drag-over'); }
+        }
+        function handleDragLeave(event) { /* ... (no changes needed) ... */
+            const targetColumn = event.currentTarget;
+            if (targetColumn.classList.contains('kanban-column')) { targetColumn.classList.remove('drag-over'); }
+        }
+        function handleDrop(event) { /* ... (no changes needed) ... */
+             event.preventDefault();
+            const targetColumn = event.currentTarget;
+            if (targetColumn.classList.contains('kanban-column') && draggedItem) {
+                const previousColumnId = draggedItem.parentElement.id;
+                targetColumn.appendChild(draggedItem);
+                targetColumn.classList.remove('drag-over');
+                console.log(`Dropped ${draggedItem.id} into ${targetColumn.id}`);
+
+                const isDone = targetColumn.id === 'done';
+                const dueDate = draggedItem.dataset.dueDate;
+                const status = checkDueDateStatus(dueDate, isDone);
+                applyDueDateStyling(draggedItem, status);
+
+                if (isDone && previousColumnId !== 'done') {
+                    triggerConfetti();
+                    console.log('Confetti!');
+                }
+                saveTasks(); // Save state after successful drop
+            } else { console.warn("Drop target is not a valid column or no item was dragged."); }
+        }
+
+        // --- Local Storage Persistence (Tasks) ---
+        function saveTasks() { /* ... (no changes needed, uses TASKS_KEY) ... */
+             const tasks = {};
+            columns.forEach(column => {
+                tasks[column.id] = [];
+                column.querySelectorAll('.task-card').forEach(card => {
+                    const textSpan = card.querySelector('span:not(.task-due-date)');
+                    const text = textSpan ? textSpan.textContent : '';
+                    tasks[column.id].push({ id: card.id, text: text, dueDate: card.dataset.dueDate });
+                });
+            });
+            localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); // Use specific key
+            console.log('Tasks saved:', tasks);
+        }
+
+        function loadTasks() { /* ... (no changes needed, uses TASKS_KEY) ... */
+             const savedTasks = localStorage.getItem(TASKS_KEY); // Use specific key
+            if (savedTasks) {
+                try {
+                    const tasks = JSON.parse(savedTasks);
+                    console.log('Tasks loaded:', tasks);
+                    Object.keys(tasks).forEach(columnId => {
+                        const column = document.getElementById(columnId);
+                        if (column) {
+                            column.querySelectorAll('.task-card').forEach(card => card.remove()); // Clear first
+                            const isDoneColumn = columnId === 'done';
+                            tasks[columnId].forEach(taskData => {
+                                const card = createTaskCard(taskData.text, taskData.dueDate, taskData.id, isDoneColumn);
+                                column.appendChild(card);
+                            });
+                        }
+                    });
+                } catch (e) {
+                    console.error("Error parsing saved tasks:", e);
+                    localStorage.removeItem(TASKS_KEY); // Clear corrupted data
+                }
+            } else { console.log('No saved tasks found.'); }
+        }
+
+        // --- Authentication Functions ---
+
+        /**
+         * Shows the login form and hides the Kanban app.
+         */
+        function showLoginForm() {
+            loginContainer.classList.remove('hidden');
+            kanbanAppContainer.classList.add('hidden');
+            document.title = "Kanban Task Tracker - Login"; // Update title
+            // Clear sensitive fields on show
+            passwordInput.value = '';
+            loginError.classList.add('hidden'); // Hide any previous errors
+            loginError.textContent = '';
+            console.log("Showing Login Form");
+        }
+
+        /**
+         * Shows the Kanban app, hides the login form, and loads tasks.
+         */
+        function showKanbanApp() {
+            loginContainer.classList.add('hidden');
+            kanbanAppContainer.classList.remove('hidden');
+            document.title = "Kanban Task Tracker"; // Update title
+            loadTasks(); // Load tasks only when showing the app
+            console.log("Showing Kanban App");
+        }
+
+        /**
+         * Handles the login attempt.
+         */
+        function handleLogin() {
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+
+            // ** VERY BASIC AND INSECURE CHECK **
+            if (username === DEFAULT_USERNAME && password === DEFAULT_PASSWORD) {
+                console.log("Login successful");
+                localStorage.setItem(LOGGED_IN_KEY, 'true'); // Set login flag
+                showKanbanApp(); // Show the main application
+                loginError.classList.add('hidden'); // Hide error message
+            } else {
+                console.warn("Login failed: Invalid credentials");
+                loginError.textContent = "Invalid username or password.";
+                loginError.classList.remove('hidden'); // Show error message
+                passwordInput.value = ''; // Clear password field on failure
+            }
+        }
+
+        /**
+         * Handles the logout action.
+         */
+        function handleLogout() {
+            localStorage.removeItem(LOGGED_IN_KEY); // Remove login flag
+            // Optional: Clear tasks on logout? Decide based on desired behavior.
+            // localStorage.removeItem(TASKS_KEY);
+            // columns.forEach(col => col.querySelectorAll('.task-card').forEach(card => card.remove())); // Clear UI
+            console.log("Logout successful");
+            showLoginForm(); // Show the login screen
+        }
+
+        // --- Initial Page Load Logic ---
+        function initializeApp() {
+            console.log("Initializing app...");
+            // Check if user is already logged in (via local storage flag)
+            if (localStorage.getItem(LOGGED_IN_KEY) === 'true') {
+                console.log("User already logged in.");
+                showKanbanApp();
+            } else {
+                console.log("User not logged in.");
+                showLoginForm();
+            }
+
+            // --- Event Listeners ---
+            // Login/Logout
+            loginBtn.addEventListener('click', handleLogin);
+            logoutBtn.addEventListener('click', handleLogout);
+            // Add login on Enter key press in password field
+            passwordInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+             usernameInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                     // Optionally move focus to password or attempt login
+                     passwordInput.focus();
+                }
+            });
+
+
+            // Task Adding
+            addTaskBtn.addEventListener('click', addTask);
+            newTaskInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') { addTask(); } });
+            newTaskDueDateInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') { addTask(); } });
+
+            // Note: Drag/drop listeners are added dynamically in createTaskCard and statically on columns in HTML
+        }
+
+        // --- Start the app ---
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+    </script>
+
+</body>
+</html>
