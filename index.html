@@ -7,39 +7,86 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        /* Custom styles */
+        /* Custom styles */ 
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6; /* Light gray background */
         }
         /* Styles for Kanban board (remain mostly the same) */
         .kanban-column {
-            min-height: 300px; background-color: #e5e7eb; border-radius: 0.5rem;
-            padding: 1rem; margin: 0.5rem; flex: 1;
+            min-height: 300px;
+            background-color: #cbc3de;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 0.5rem;
+            flex: 1;
             transition: background-color 0.2s ease-in-out;
         }
-        .kanban-column.drag-over { background-color: #d1d5db; }
+        .kanban-column.drag-over {
+            background-color: #d1d5db;
+        }
         .task-card {
-            background-color: white; border-radius: 0.375rem; padding: 0.75rem;
-            margin-bottom: 0.75rem; cursor: grab;
+            background-color: white;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            cursor: grab;
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
             transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
-            border-left: 4px solid transparent; position: relative;
+            border-left: 4px solid transparent;
+            position: relative;
         }
-        .task-card:active { cursor: grabbing; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-        .task-card.dragging { opacity: 0.5; }
-        .task-due-date { font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem; display: block; }
-        .task-card.overdue { border-left-color: #ef4444; } /* Red */
-        .task-card.due-soon { border-left-color: #f59e0b; } /* Amber */
-        .task-card.done-task { border-left-color: #22c55e; } /* Green */
-        .add-task-container { background-color: white; border-radius: 0.5rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .task-card:active {
+            cursor: grabbing;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .task-card.dragging {
+            opacity: 0.5;
+        }
+        .task-due-date {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+            display: block;
+        }
+        .task-card.overdue {
+            border-left-color: #ef4444;
+        } /* Red */
+        .task-card.due-soon {
+            border-left-color: #f59e0b;
+        } /* Amber */
+        .task-card.done-task {
+            border-left-color: #22c55e;
+        } /* Green */
+        .add-task-container {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
         .delete-task-btn {
-            position: absolute; top: 5px; right: 5px; background: none; border: none;
-            color: #9ca3af; font-size: 1rem; cursor: pointer; padding: 2px; line-height: 1;
-            border-radius: 50%; width: 20px; height: 20px; display: flex;
-            align-items: center; justify-content: center; transition: color 0.2s ease, background-color 0.2s ease;
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 2px;
+            line-height: 1;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s ease, background-color 0.2s ease;
         }
-        .delete-task-btn:hover { color: #ef4444; background-color: #fee2e2; }
+        .delete-task-btn:hover {
+            color: #ef4444;
+            background-color: #fee2e2;
+        }
 
         /* Styles for Login Container */
         #loginContainer {
@@ -51,7 +98,70 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
         /* Helper class to hide elements */
-        .hidden { display: none; }
+        .hidden {
+            display: none;
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #1a202c; /* Dark background */
+            color: #f7fafc; /* Light text */
+        }
+
+        #loginContainer.dark-mode,
+        .add-task-container.dark-mode,
+        .kanban-column.dark-mode,
+        .task-card.dark-mode {
+            background-color: #2d3748; /* Darker container backgrounds */
+            color: #edf2f7;
+            box-shadow: 0 1px 3px 0 rgba(255, 255, 255, 0.1), 0 1px 2px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        .kanban-column.drag-over.dark-mode {
+            background-color: #4a5568; /* Slightly lighter when dragging over */
+        }
+
+        .task-card.dark-mode {
+            border-color: #4a5568 !important; /* Adjust border color in dark mode */
+        }
+
+        .task-due-date.dark-mode {
+            color: #a0aec0;
+        }
+
+        .delete-task-btn.dark-mode {
+            color: #cbd5e0;
+            background-color: transparent;
+        }
+
+        .delete-task-btn.dark-mode:hover {
+            color: #ef4444;
+            background-color: #4a5568;
+        }
+
+        .text-gray-800.dark-mode,
+        .text-gray-700.dark-mode {
+            color: #48729d;
+        }
+
+        .border-gray-300.dark-mode {
+            border-color: #4a5568;
+        }
+
+        .focus:ring-blue-500.dark-mode {
+            --tw-ring-color: #66a7ff; /* Adjust focus ring color for visibility */
+        }
+
+        .bg-yellow-100.dark-mode {
+            background-color: #4a3b1d;
+            color: #f0e0b2;
+            border-color: #68552b;
+        }
+
+        .text-yellow-800.dark-mode {
+            color: #f0e0b2;
+        }
+
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -73,7 +183,8 @@
             <button id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-150 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 Login
             </button>
-            <p id="loginError" class="text-red-600 text-sm text-center mt-2 hidden"></p> </div>
+            <p id="loginError" class="text-red-600 text-sm text-center mt-2 hidden"></p>
+        </div>
         <div class="mt-6 p-3 bg-yellow-100 border border-yellow-300 rounded-lg text-sm text-yellow-800">
             <p><strong>Note:</strong> This is a demo login.</p>
             <p>Use username: <strong>username</strong> and password: <strong>password</strong> to explore the app.</p>
@@ -82,12 +193,17 @@
     </div>
 
     <div id="kanbanAppContainer" class="hidden">
-         <div class="max-w-6xl mx-auto">
+        <div class="max-w-6xl mx-auto">
             <div class="flex justify-between items-center mb-8">
-                 <h1 class="text-3xl font-bold text-gray-800">My Kanban Board</h1>
-                 <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                     Logout
-                 </button>
+                <h1 class="text-3xl font-bold text-gray-800">My Kanban Board</h1>
+                <div class="flex items-center">
+                    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        Logout
+                    </button>
+                    <button id="darkModeToggle" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 ml-4">
+                        Dark Mode
+                    </button>
+                </div>
             </div>
 
             <div class="add-task-container mb-8 flex flex-col sm:flex-row items-stretch gap-4">
@@ -101,15 +217,15 @@
             <div class="flex flex-col md:flex-row justify-between gap-4">
                 <div id="todo" class="kanban-column" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="handleDragLeave(event)">
                     <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b-2 border-red-400 pb-2">To Do</h2>
-                    </div>
+                </div>
 
                 <div id="inprogress" class="kanban-column" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="handleDragLeave(event)">
                     <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b-2 border-yellow-400 pb-2">In Progress</h2>
-                    </div>
+                </div>
 
                 <div id="done" class="kanban-column" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="handleDragLeave(event)">
                     <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b-2 border-green-400 pb-2">Done</h2>
-                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -120,6 +236,7 @@
         const DEFAULT_PASSWORD = 'password';
         const LOGGED_IN_KEY = 'kanbanAppLoggedIn'; // Local storage key for login status
         const TASKS_KEY = 'kanbanTasks'; // Local storage key for tasks
+        const DARK_MODE_KEY = 'darkMode';
 
         // --- DOM Elements ---
         // Login Elements
@@ -138,46 +255,71 @@
         const columns = document.querySelectorAll('.kanban-column');
         const todoColumn = document.getElementById('todo');
         const doneColumn = document.getElementById('done');
+        const darkModeToggle = document.getElementById('darkModeToggle'); // Get the dark mode toggle button
+
 
         // --- State ---
         let draggedItem = null;
+        let isDarkMode = localStorage.getItem(DARK_MODE_KEY) === 'enabled'; // Check saved preference
 
         // --- Utility Functions (Formatting, Date Checking) ---
-        function formatDate(dateString) { /* ... (no changes needed) ... */
+        function formatDate(dateString) {
             if (!dateString) return '';
             try {
                 const date = new Date(dateString + 'T00:00:00');
                 if (isNaN(date.getTime())) return '';
-                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-            } catch (e) { console.error("Error formatting date:", e); return ''; }
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            } catch (e) {
+                console.error("Error formatting date:", e);
+                return '';
+            }
         }
 
-        function checkDueDateStatus(dueDateString, isDone) { /* ... (no changes needed) ... */
-             if (isDone) return 'done-task';
+        function checkDueDateStatus(dueDateString, isDone) {
+            if (isDone) return 'done-task';
             if (!dueDateString) return 'normal';
             try {
-                const today = new Date(); today.setHours(0, 0, 0, 0);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
                 const dueDate = new Date(dueDateString + 'T00:00:00');
                 if (isNaN(dueDate.getTime())) return 'normal';
                 const timeDiff = dueDate.getTime() - today.getTime();
                 const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-                if (dayDiff < 0) { return 'overdue'; }
-                else if (dayDiff <= 2) { return 'due-soon'; }
-                else { return 'normal'; }
-            } catch (e) { console.error("Error checking due date status:", e); return 'normal'; }
+                if (dayDiff < 0) {
+                    return 'overdue';
+                } else if (dayDiff <= 2) {
+                    return 'due-soon';
+                } else {
+                    return 'normal';
+                }
+            } catch (e) {
+                console.error("Error checking due date status:", e);
+                return 'normal';
+            }
         }
 
-        function applyDueDateStyling(card, status) { /* ... (no changes needed) ... */
+        function applyDueDateStyling(card, status) {
             card.classList.remove('overdue', 'due-soon', 'done-task');
-            if (status === 'overdue') { card.classList.add('overdue'); }
-            else if (status === 'due-soon') { card.classList.add('due-soon'); }
-            else if (status === 'done-task') { card.classList.add('done-task'); }
+            if (status === 'overdue') {
+                card.classList.add('overdue');
+            } else if (status === 'due-soon') {
+                card.classList.add('due-soon');
+            } else if (status === 'done-task') {
+                card.classList.add('done-task');
+            }
         }
 
         // --- Core Task Functions ---
-        function createTaskCard(text, dueDate, id, isDone = false) { /* ... (no changes needed) ... */
+        function createTaskCard(text, dueDate, id, isDone = false) {
             const card = document.createElement('div');
             card.classList.add('task-card');
+            if (isDarkMode) {
+                card.classList.add('dark-mode');
+            }
             card.setAttribute('draggable', 'true');
             card.setAttribute('id', id || `task-${Date.now()}`);
             card.dataset.dueDate = dueDate || '';
@@ -189,12 +331,18 @@
             if (dueDate) {
                 const dueDateSpan = document.createElement('span');
                 dueDateSpan.classList.add('task-due-date');
+                if (isDarkMode) {
+                    dueDateSpan.classList.add('dark-mode');
+                }
                 dueDateSpan.textContent = `Due: ${formatDate(dueDate)}`;
                 card.appendChild(dueDateSpan);
             }
 
             const deleteBtn = document.createElement('button');
             deleteBtn.classList.add('delete-task-btn');
+            if (isDarkMode) {
+                deleteBtn.classList.add('dark-mode');
+            }
             deleteBtn.innerHTML = '&times;';
             deleteBtn.title = 'Delete Task';
             deleteBtn.addEventListener('click', (event) => {
@@ -217,7 +365,7 @@
             return card;
         }
 
-        function addTask() { /* ... (no changes needed) ... */
+        function addTask() {
             const taskText = newTaskInput.value.trim();
             const taskDueDate = newTaskDueDateInput.value;
             if (taskText) {
@@ -226,38 +374,54 @@
                 newTaskInput.value = '';
                 newTaskDueDateInput.value = '';
                 saveTasks();
-            } else { console.warn("Task input is empty."); }
+            } else {
+                console.warn("Task input is empty.");
+            }
         }
 
-        function triggerConfetti() { /* ... (no changes needed) ... */
-             confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 }, colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42'], zIndex: 1000 });
+        function triggerConfetti() {
+            confetti({
+                particleCount: 150,
+                spread: 90,
+                origin: {
+                    y: 0.6
+                },
+                colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42'],
+                zIndex: 1000
+            });
         }
 
         // --- Drag and Drop Handlers ---
-        function handleDragStart(event) { /* ... (no changes needed) ... */
-             draggedItem = event.target;
+        function handleDragStart(event) {
+            draggedItem = event.target;
             event.dataTransfer.setData('text/plain', event.target.id);
-            setTimeout(() => { event.target.classList.add('dragging'); }, 0);
+            setTimeout(() => {
+                event.target.classList.add('dragging');
+            }, 0);
             console.log('Drag Start:', draggedItem.id);
-         }
-        function handleDragEnd(event) { /* ... (no changes needed) ... */
+        }
+        function handleDragEnd(event) {
             if (draggedItem) {
                 draggedItem.classList.remove('dragging');
                 console.log('Drag End:', draggedItem.id);
                 draggedItem = null;
             }
         }
-        function handleDragOver(event) { /* ... (no changes needed) ... */
+        function handleDragOver(event) {
             event.preventDefault();
             const targetColumn = event.currentTarget;
-            if (targetColumn.classList.contains('kanban-column')) { targetColumn.classList.add('drag-over'); }
+            if (targetColumn.classList.contains('kanban-column')) {
+                targetColumn.classList.add('drag-over');
+            }
         }
-        function handleDragLeave(event) { /* ... (no changes needed) ... */
+        function handleDragLeave(event) {
             const targetColumn = event.currentTarget;
-            if (targetColumn.classList.contains('kanban-column')) { targetColumn.classList.remove('drag-over'); }
+            if (targetColumn.classList.contains('kanban-column')) {
+                targetColumn.classList.remove('drag-over');
+            }
         }
-        function handleDrop(event) { /* ... (no changes needed) ... */
-             event.preventDefault();
+        function handleDrop(event) {
+            event.preventDefault();
             const targetColumn = event.currentTarget;
             if (targetColumn.classList.contains('kanban-column') && draggedItem) {
                 const previousColumnId = draggedItem.parentElement.id;
@@ -275,26 +439,32 @@
                     console.log('Confetti!');
                 }
                 saveTasks(); // Save state after successful drop
-            } else { console.warn("Drop target is not a valid column or no item was dragged."); }
+            } else {
+                console.warn("Drop target is not a valid column or no item was dragged.");
+            }
         }
 
         // --- Local Storage Persistence (Tasks) ---
-        function saveTasks() { /* ... (no changes needed, uses TASKS_KEY) ... */
-             const tasks = {};
+        function saveTasks() {
+            const tasks = {};
             columns.forEach(column => {
                 tasks[column.id] = [];
                 column.querySelectorAll('.task-card').forEach(card => {
                     const textSpan = card.querySelector('span:not(.task-due-date)');
                     const text = textSpan ? textSpan.textContent : '';
-                    tasks[column.id].push({ id: card.id, text: text, dueDate: card.dataset.dueDate });
+                    tasks[column.id].push({
+                        id: card.id,
+                        text: text,
+                        dueDate: card.dataset.dueDate
+                    });
                 });
             });
             localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); // Use specific key
             console.log('Tasks saved:', tasks);
         }
 
-        function loadTasks() { /* ... (no changes needed, uses TASKS_KEY) ... */
-             const savedTasks = localStorage.getItem(TASKS_KEY); // Use specific key
+        function loadTasks() {
+            const savedTasks = localStorage.getItem(TASKS_KEY); // Use specific key
             if (savedTasks) {
                 try {
                     const tasks = JSON.parse(savedTasks);
@@ -314,7 +484,9 @@
                     console.error("Error parsing saved tasks:", e);
                     localStorage.removeItem(TASKS_KEY); // Clear corrupted data
                 }
-            } else { console.log('No saved tasks found.'); }
+            } else {
+                console.log('No saved tasks found.');
+            }
         }
 
         // --- Authentication Functions ---
@@ -370,11 +542,55 @@
          */
         function handleLogout() {
             localStorage.removeItem(LOGGED_IN_KEY); // Remove login flag
-            // Optional: Clear tasks on logout? Decide based on desired behavior.
-            // localStorage.removeItem(TASKS_KEY);
-            // columns.forEach(col => col.querySelectorAll('.task-card').forEach(card => card.remove())); // Clear UI
+            localStorage.removeItem(DARK_MODE_KEY);
+            isDarkMode = false;
+            disableDarkMode();
             console.log("Logout successful");
             showLoginForm(); // Show the login screen
+        }
+
+        // --- Dark Mode Functions ---
+        function enableDarkMode() {
+            document.body.classList.add('dark-mode');
+            loginContainer.classList.add('dark-mode');
+            kanbanAppContainer.classList.add('dark-mode');
+            document.querySelectorAll('.add-task-container').forEach(el => el.classList.add('dark-mode'));
+            document.querySelectorAll('.kanban-column').forEach(el => el.classList.add('dark-mode'));
+            document.querySelectorAll('.task-card').forEach(el => el.classList.add('dark-mode'));
+            document.querySelectorAll('.text-gray-800').forEach(el => el.classList.add('dark-mode'));
+            document.querySelectorAll('.text-gray-700').forEach(el => el.classList.add('dark-mode'));
+            document.querySelectorAll('.border-gray-300').forEach(el => el.classList.add('dark-mode'));
+             document.querySelectorAll('.bg-yellow-100').forEach(el => el.classList.add('dark-mode'));
+            document.querySelectorAll('.text-yellow-800').forEach(el => el.classList.add('dark-mode'));
+            document.querySelectorAll('.delete-task-btn').forEach(el => el.classList.add('dark-mode'));
+            localStorage.setItem(DARK_MODE_KEY, 'enabled');
+            darkModeToggle.textContent = 'Light Mode';
+        }
+
+        function disableDarkMode() {
+            document.body.classList.remove('dark-mode');
+            loginContainer.classList.remove('dark-mode');
+            kanbanAppContainer.classList.remove('dark-mode');
+            document.querySelectorAll('.add-task-container').forEach(el => el.classList.remove('dark-mode'));
+            document.querySelectorAll('.kanban-column').forEach(el => el.classList.remove('dark-mode'));
+            document.querySelectorAll('.task-card').forEach(el => el.classList.remove('dark-mode'));
+             document.querySelectorAll('.text-gray-800').forEach(el => el.classList.remove('dark-mode'));
+            document.querySelectorAll('.text-gray-700').forEach(el => el.classList.remove('dark-mode'));
+            document.querySelectorAll('.border-gray-300').forEach(el => el.classList.remove('dark-mode'));
+            document.querySelectorAll('.bg-yellow-100').forEach(el => el.classList.remove('dark-mode'));
+            document.querySelectorAll('.text-yellow-800').forEach(el => el.classList.remove('dark-mode'));
+            document.querySelectorAll('.delete-task-btn').forEach(el => el.classList.remove('dark-mode'));
+            localStorage.setItem(DARK_MODE_KEY, 'disabled');
+            darkModeToggle.textContent = 'Dark Mode';
+        }
+
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) {
+                enableDarkMode();
+            } else {
+                disableDarkMode();
+            }
         }
 
         // --- Initial Page Load Logic ---
@@ -389,6 +605,16 @@
                 showLoginForm();
             }
 
+            // Dark Mode Toggle Button Setup - moved inside initializeApp
+            darkModeToggle.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
+            darkModeToggle.classList.add('bg-gray-300', 'hover:bg-gray-400', 'text-gray-800', 'font-semibold', 'py-2', 'px-4', 'rounded-lg', 'transition', 'duration-150', 'ease-in-out', 'shadow-sm', 'hover:shadow-md', 'focus:outline-none', 'focus:ring-2', 'focus:ring-gray-500', 'focus:ring-offset-2', 'ml-4'); // Basic Tailwind classes
+            darkModeToggle.addEventListener('click', toggleDarkMode);
+
+            // Apply initial dark mode state
+            if (isDarkMode) {
+                enableDarkMode();
+            }
+
             // --- Event Listeners ---
             // Login/Logout
             loginBtn.addEventListener('click', handleLogin);
@@ -399,26 +625,32 @@
                     handleLogin();
                 }
             });
-             usernameInput.addEventListener('keypress', (event) => {
+            usernameInput.addEventListener('keypress', (event) => {
                 if (event.key === 'Enter') {
-                     // Optionally move focus to password or attempt login
-                     passwordInput.focus();
+                    // Optionally move focus to password or attempt login
+                    passwordInput.focus();
                 }
             });
 
 
             // Task Adding
             addTaskBtn.addEventListener('click', addTask);
-            newTaskInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') { addTask(); } });
-            newTaskDueDateInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') { addTask(); } });
+            newTaskInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    addTask();
+                }
+            });
+            newTaskDueDateInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    addTask();
+                }
+            });
 
             // Note: Drag/drop listeners are added dynamically in createTaskCard and statically on columns in HTML
         }
 
         // --- Start the app ---
         document.addEventListener('DOMContentLoaded', initializeApp);
-
     </script>
-
 </body>
 </html>
